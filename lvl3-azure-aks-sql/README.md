@@ -2,6 +2,10 @@
 
 In Level 3, I aimed to seamlessly integrate Azure Kubernetes Service (AKS) with Azure SQL Database to establish a robust, scalable infrastructure.
 
+Below is the outline of my progress and approach:
+
+### Progress:
+
 ## Infrastructure Breakdown
 
 ### 1. **Azure Provider Configuration**
