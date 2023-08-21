@@ -7,20 +7,14 @@ resource "azurerm_virtual_network" "demo" {
   resource_group_name = azurerm_resource_group.demo-rg.name
   name                = "${var.prefix}-network"
   location            = var.location
-
-  address_space = [
-    "10.0.0.0/16",
-  ]
+  address_space       = ["10.0.0.0/16"]
 }
 
 resource "azurerm_subnet" "demo" {
   virtual_network_name = azurerm_virtual_network.demo.name
   resource_group_name  = azurerm_resource_group.demo-rg.name
   name                 = "internal"
-
-  address_prefixes = [
-    "10.0.2.0/24",
-  ]
+  address_prefixes     = ["10.0.2.0/24"]
 }
 
 resource "azurerm_network_interface" "demo" {
@@ -36,15 +30,12 @@ resource "azurerm_network_interface" "demo" {
 }
 
 resource "azurerm_virtual_machine" "demo" {
-  vm_size                       = "Standard_F2"
+  vm_size                       = "Standard_DS3_v2"
   resource_group_name           = azurerm_resource_group.demo-rg.name
   name                          = "${var.prefix}-vm"
   location                      = var.location
   delete_os_disk_on_termination = true
-
-  network_interface_ids = [
-    azurerm_network_interface.demo.id,
-  ]
+  network_interface_ids         = [azurerm_network_interface.demo.id]
 
   storage_os_disk {
     name              = "myosdisk1"
@@ -52,13 +43,30 @@ resource "azurerm_virtual_machine" "demo" {
     create_option     = "FromImage"
     caching           = "ReadWrite"
   }
+
+  storage_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "18.04-LTS"
+    version   = "latest"
+  }
+
+  os_profile {
+    computer_name  = "${var.prefix}-vm"
+    admin_username = "adminuser"
+    admin_password = "Password1234!"
+  }
+
+  os_profile_linux_config {
+    disable_password_authentication = false
+  }
 }
 
 resource "azurerm_virtual_machine_data_disk_attachment" "external" {
   virtual_machine_id = azurerm_virtual_machine.demo.id
   managed_disk_id    = azurerm_managed_disk.external.*.id[count.index]
   lun                = count.index + 10
-  count              = 10
+  count              = 8
   caching            = "ReadWrite"
 }
 
@@ -69,5 +77,6 @@ resource "azurerm_managed_disk" "external" {
   location             = var.location
   disk_size_gb         = 10
   create_option        = "Empty"
-  count                = 10
+  count                = 8
 }
+
